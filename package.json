@@ -1,0 +1,22 @@
+{
+  "name": "api-testing-cypress",
+  "version": "1.0.0",
+  "description": "API Testing with Cypress",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "cypress": "npx cypress open",
+    "cypress:test": "npx cypress open --env configFile=test",
+    "cypress:stage": "npx cypress open --env configFile=stage",
+    "cypress:headless:test": "npx cypress run --env configFile=test",
+    "cypress:headless": "npx cypress run --headless --browser chromium",
+    "cypress:headless:testfile": "npx cypress run --headless --browser chromium --spec \"cypress/integration/line-ticket/UI Reseller -> TCA Supplier/UI_Reseller->TCA_Supplier-ui-spec.ts\"",
+    "cypress:headless:stage": "npx cypress run --env configFile=stage"
+  },
+  "author": "Arsene Kwete",
+  "license": "ISC",
+  "devDependencies": {
+    "cypress": "^12.12.0",
+    "cypress-plugin-api": "^2.11.0"
+  }
+}
