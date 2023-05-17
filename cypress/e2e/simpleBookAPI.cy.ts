@@ -3,7 +3,7 @@ describe('Simple Books API', () => {
         cy.api({
             method: 'GET',
             url: '/status'
-        }).then((response) => {
+        }).then((response: any) => {
             expect(response.status).to.equal(200);
             expect(response.body).to.have.property('status', 'OK');
         });
@@ -13,9 +13,9 @@ describe('Simple Books API', () => {
         cy.api({
             method: 'GET',
             url: '/books'
-        }).then((response) => {
+        }).then((response: any) => {
             expect(response.status).to.equal(200);
-            expect(response.body).to.have.property('id', 'OK');
+            expect(response.body).to.have.property('id', '1');
         });
     });
 });
