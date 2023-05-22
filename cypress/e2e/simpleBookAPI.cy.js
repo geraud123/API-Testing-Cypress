@@ -2,6 +2,7 @@ import faker from 'faker';
 
 describe('Simple Books API', () => {
     let bookId = 1;
+    let orderId = null;
     let accessToken = null;
 
     it('Returns the status of the API', () => {
@@ -96,14 +97,19 @@ describe('Simple Books API', () => {
                 url: '/orders',
                 headers: {
                     ContentType: "application/json",
-                    Authorization: "Bearer "+accessToken
+                    Authorization: "Bearer " + accessToken
                 },
                 body: {
                     "bookId": bookId,
                     "customerName": name
                 }
             }).then((response) => {
-                expect(response.status).to.equal(201);
+                if (expect(response.status).to.equal(201)) {
+                    cy.readFile("cypress/fixtures/response.json").then((contentFile) => {
+                        contentFile.orderId = response.body.orderId;
+                        cy.writeFile("cypress/fixtures/response.json", contentFile, "utf8");
+                    });
+                }
                 expect(response.body).to.be.an('object'); // Assert that the body is an object
                 expect(response.body).to.have.property("created", true);
             });
@@ -121,7 +127,7 @@ describe('Simple Books API', () => {
                 url: '/orders',
                 headers: {
                     ContentType: "application/json",
-                    Authorization: "Bearer "+accessToken
+                    Authorization: "Bearer " + accessToken
                 }
             }).then((response) => {
                 expect(response.status).to.equal(200);
@@ -135,21 +141,107 @@ describe('Simple Books API', () => {
     it('Get an order', () => {
 
         cy.fixture("response.json").then((fileContent) => {
+            const { accessToken, orderId } = fileContent;
+
+            cy.api({
+                method: 'GET',
+                url: '/orders/' + orderId,
+                headers: {
+                    ContentType: "application/json",
+                    Authorization: "Bearer " + accessToken
+                }
+            }).then((response) => {
+                expect(response.status).to.equal(200);
+                expect(response.body).to.be.an('object'); // Assert that the body is an object
+                expect(response.body).to.have.property("id", orderId);
+            });
+        });
+    });
+
+    it('Update an order', () => {
+
+        cy.fixture("response.json").then((fileContent) => {
             accessToken = fileContent.accessToken;
+            orderId = fileContent.orderId;
+        }).then(() => {
+
+            cy.api({
+                method: 'PATCH',
+                url: '/orders/' + orderId,
+                headers: {
+                    ContentType: "application/json",
+                    Authorization: "Bearer " + accessToken
+                },
+                body: {
+                    "customerName": "Newname"
+                }
+            }).then((response) => {
+                expect(response.status).to.equal(204);
+            });
+        });
+    });
+
+    it('Get the modified order', () => {
+
+        cy.fixture("response.json").then((fileContent) => {
+            accessToken = fileContent.accessToken;
+            orderId = fileContent.orderId;
         }).then(() => {
 
             cy.api({
                 method: 'GET',
-                url: '/orders',
+                url: '/orders/' + orderId,
                 headers: {
                     ContentType: "application/json",
-                    Authorization: "Bearer "+accessToken
+                    Authorization: "Bearer " + accessToken
                 }
             }).then((response) => {
                 expect(response.status).to.equal(200);
-                expect(response.body).to.have.length(1); // Assert that the body is an object
-                const object = response.body.find((obj) => obj.bookId === bookId);
-                expect(object).to.have.property("createdBy");
+                expect(response.body).to.be.an('object'); // Assert that the body is an object
+                expect(response.body).to.have.property("id", orderId);
+                expect(response.body).to.have.property("customerName", "Newname");
+            });
+        });
+    });
+
+    it('Delete an order', () => {
+
+        cy.fixture("response.json").then((fileContent) => {
+            accessToken = fileContent.accessToken;
+            orderId = fileContent.orderId;
+        }).then(() => {
+
+            cy.api({
+                method: 'DELETE',
+                url: '/orders/' + orderId,
+                headers: {
+                    ContentType: "application/json",
+                    Authorization: "Bearer " + accessToken
+                }
+            }).then((response) => {
+                expect(response.status).to.equal(204);
+            });
+        });
+    });
+
+    it('Get the deleted order', () => {
+
+        cy.fixture("response.json").then((fileContent) => {
+            accessToken = fileContent.accessToken;
+            orderId = fileContent.orderId;
+        }).then(() => {
+
+            cy.api({
+                method: 'GET',
+                url: '/orders/' + orderId,
+                headers: {
+                    ContentType: "application/json",
+                    Authorization: "Bearer " + accessToken
+                }
+            }).then((response) => {
+                expect(response.status).to.equal(404);
+                expect(response.body).to.be.an('object'); // Assert that the body is an object
+                expect(response.body).to.have.property("error", "No order with id " + orderId + ".");
             });
         });
     });
